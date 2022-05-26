@@ -3,6 +3,10 @@
 ## Introduction
 This Proof of Concept (POC) bidding service application will demonstrate the use of AWS Nitro Enclaves to perform computation on multiple sensitive datasets. We will utilize Nitro Enclaves with AWS Key Management Service (KMS) to create an isolated compute environment, allow the environment to process encrypted datasets from multiple parties, and return an output. The POC application will be centered around the scenario of real estate bidding where a bidding service will take in encrypted bids from two buyers and determine the highest bid on each property without disclosing the bid amounts to each buyer. Instructions are given for three different roles: Buyer1, Buyer2, and the Bidding Service. You can create three separate accounts for each role or use a single account for all the roles.
 
+<p align="center">
+  <img width="629" height="600" src="/BiddingServiceApplicationDiagram.png">
+</p>
+
 ## How it works
 The POC bidding service application is a single python script that contains the implementation for both the parent instance and the enclave instance. The parent instance is responsible for retrieving the encrypted bids from S3, sending a Decrypt message to the enclave instance with the encrypted bids, and writing the output of the Decrypt message to its own S3 bucket. The enclave instance is responsible for calling KMS to decrypt the bids, determining the highest bidder, and returning the output to the parent. Communication between the parent and the enclave is done through a VSockHandler class which handles low level functions of a VSock connection. A detailed look at the code is shown below:
 
