@@ -292,7 +292,7 @@ Enclave Image successfully created.
   } 
 }
 ```
-7. Save the PCR0 value for setting up the KMS key policies later in this document.
+7. Save the PCR values for setting up the KMS key policies later in this document.
 
 ### KMS Key Policies Setup
 #### Buyer1 and Buyer2
@@ -378,7 +378,7 @@ Successful S3 put_object response. Status - 200
 
 ### Running the Bidding Service Application in production mode
 #### Buyer1 and Buyer2
-1. Change the key policies to use the actual PCR0 value.
+1. Change the key policies to use the actual PCR measurement values generated from the enclave image.
 ```
 {
     "Sid": "Allow use of the key",
@@ -390,7 +390,9 @@ Successful S3 put_object response. Status - 200
     "Resource": "*",
     "Condition": {
         "StringEqualsIgnoreCase": {
-            "kms:RecipientAttestation:ImageSha384": "<PCR0 VALUE>"
+            "kms:RecipientAttestation:ImageSha384": "<PCR0 VALUE>",
+            "kms:RecipientAttestation:PCR1":"<PCR1 VALUE>", 
+            "kms:RecipientAttestation:PCR2":"<PCR2 VALUE>"
         }
     }
 }
