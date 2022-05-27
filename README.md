@@ -157,9 +157,10 @@ Returns: <Encrypted Bid 3>
 Buyer2 should repeat the steps above to create their AWS resources and generate their own file. Ensure the bid amounts are different.
 
 #### Bidding Service
-1. Create a S3 bucket. See these [instructions](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html "instructions") Note the name and ARN.
-2. Follow these [instructions](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#working-with-iam-roles "instructions") to create an IAM EC2 instance role.
-3. Note the ARN for the IAM role.
+1. Create a S3 bucket. See these [instructions](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html "instructions") 
+2. Note the name and ARN.
+3. Follow these [instructions](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#working-with-iam-roles "instructions") to create an IAM EC2 instance role.
+4. Note the ARN for the IAM role.
 
 ### IAM Setup
 At this point you should have the following ARNs from the previous steps:
