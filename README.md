@@ -296,7 +296,7 @@ Enclave Image successfully created.
 
 ### KMS Key Policies Setup
 #### Buyer1 and Buyer2
-1. Follow these [instructions](https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-modifying.html 'instructions') to modify the KMS CMK key policy for each Buyer. You will want to add the following statement to the key policy:
+1. Follow these [instructions](https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-modifying.html 'instructions') to modify the KMS CMK key policy for each Buyer. You will want to add the following statement to the key policy. Note that the value of kms:RecipientAttestation:ImageSha384 is a series of zeroes as we will be running in debug mode for troubleshooting purposes:
 ```
 {
     "Sid": "Allow use of the key",
@@ -308,15 +308,15 @@ Enclave Image successfully created.
     "Resource": "*",
     "Condition": {
         "StringEqualsIgnoreCase": {
-            "kms:RecipientAttestation:ImageSha384": "<PCR0 value>"
+            "kms:RecipientAttestation:ImageSha384": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
         }
     }
 }
 ```
 
-### Running the Bidding Service Application
+### Running the Bidding Service Application in debug mode
 #### Bidding Service
-1. Start the Enclave
+1. Start the Enclave in debug mode. In debug mode, you will beable to connect to the enclave's console to view its output for troubleshooting. Also the PCR0 value sent to KMS will be a series of zeroes used instead of the actual PCR0 value.
 ```
 sudo nitro-cli run-enclave --eif-path ~/vsock_poc.eif --cpu-count 2 --memory 2048 --debug-mode
 ```
@@ -338,7 +338,8 @@ Started enclave with enclave-cid: 19, memory: 2048 MiB, cpu-ids: [1, 5]
 }
 ```
 Note the EnclaveID and EnclaveCID.
-2. Connect to the Enclave console using the EnclaveID:
+
+2. Connect to the enclave console using the EnclaveID:
 ```
 sudo nitro-cli console --enclave-id <EnclaveID>
 ```
@@ -374,6 +375,32 @@ Result: Buyer1 Wins
 Successful S3 put_object response. Status - 200
 ```
 4. An output file: output.csv should have been generated in the Bidding Service S3 bucket.
+
+### Running the Bidding Service Application in production mode
+#### Buyer1 and Buyer2
+1. Change the key policies to use the actual PCR0 value.
+```
+{
+    "Sid": "Allow use of the key",
+    "Effect": "Allow",
+    "Principal": {
+        "AWS": "<INSTANCE ROLE ARN>"
+    },
+    "Action": "kms:Decrypt",
+    "Resource": "*",
+    "Condition": {
+        "StringEqualsIgnoreCase": {
+            "kms:RecipientAttestation:ImageSha384": "<PCR0 VALUE>"
+        }
+    }
+}
+```
+
+#### Bidding Service
+1. Repeat the steps for running the bidding service application but remove the debug-mode flag. You will also not be able to connect to the enclave console.
+```
+sudo nitro-cli run-enclave --eif-path ~/vsock_poc.eif --cpu-count 2 --memory 2048
+```
 
 ## Security
 
