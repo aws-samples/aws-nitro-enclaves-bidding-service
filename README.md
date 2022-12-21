@@ -222,7 +222,6 @@ At this point you should have the following ARNs from the previous steps:
     ]
 }
 ```
-# Do we also need to add the trust relationship for account and root?
 
 ### EC2 Instance Setup
 #### Bidding Service
@@ -243,7 +242,7 @@ sudo yum install -y aws-nitro-enclaves-cli aws-nitro-enclaves-cli-devel
 ```
 4. Allocate more memory to Nitro Enclaves by modifying /etc/nitro_enclaves/allocator.yaml:
 ```
-memory_mib: 2048
+memory_mib: 4096
 ```
 5. Run this command to allocate the memory
 ```
@@ -281,7 +280,10 @@ bucketBiddingService = "<Bidding Service BUCKET NAME>"
 instanceRoleARN = "<INSTANCE ROLE ARN>"
 ...
 ```
-Also remember to modify the AWS region in the file if you are not using the default region
+Also remember to modify the AWS region in the file if you are not using the default region.
+
+> For step 5 to 7, you can run `script/update_enclave.sh`.
+
 5. Build the container
 ```
 docker build -t vsock-poc .
@@ -327,12 +329,12 @@ Enclave Image successfully created.
 #### Bidding Service
 1. Start the Enclave in debug mode. In debug mode, you will beable to connect to the enclave's console to view its output for troubleshooting. Also the PCR0 value sent to KMS will be a series of zeroes used instead of the actual PCR0 value.
 ```
-sudo nitro-cli run-enclave --eif-path ~/vsock_poc.eif --cpu-count 2 --memory 2048 --debug-mode
+sudo nitro-cli run-enclave --eif-path ~/vsock_poc.eif --cpu-count 2 --memory 4096 --debug-mode
 ```
 If successful, you will see similar output below:
 ```
 Start allocating memory...
-Started enclave with enclave-cid: 19, memory: 2048 MiB, cpu-ids: [1, 5]
+Started enclave with enclave-cid: 19, memory: 4096 MiB, cpu-ids: [1, 5]
 {
   "EnclaveName": "vsock_poc",
   "EnclaveID": "i-0c3d696ac3c1f00dc-enc1802f51427d0db9",
@@ -343,7 +345,7 @@ Started enclave with enclave-cid: 19, memory: 2048 MiB, cpu-ids: [1, 5]
     1,
     5
   ],
-  "MemoryMiB": 2048
+  "MemoryMiB": 4096
 }
 ```
 Note the EnclaveID and EnclaveCID.
@@ -387,7 +389,7 @@ Successful S3 put_object response. Status - 200
 
 ### Running the Bidding Service Application in production mode
 #### Buyer1 and Buyer2
-1. Change the key policies to use the actual PCR measurement values generated from the enclave image.
+1. Change the key policies to use the actual PCR measurement values generated from the enclave image. 
 ```
 {
     "Sid": "Allow use of the key",
@@ -406,11 +408,11 @@ Successful S3 put_object response. Status - 200
     }
 }
 ```
-
+> You can run `script/generate_key_policy.sh` to generate the above policy with PCRs pre-filled. Remember to replace the `<INSTANCE ROLE ARN>` manually.
 #### Bidding Service
 1. Repeat the steps for running the bidding service application but remove the debug-mode flag. You will also not be able to connect to the enclave console.
 ```
-sudo nitro-cli run-enclave --eif-path ~/vsock_poc.eif --cpu-count 2 --memory 2048
+sudo nitro-cli run-enclave --eif-path ~/vsock_poc.eif --cpu-count 2 --memory 4096
 ```
 
 ## Security
