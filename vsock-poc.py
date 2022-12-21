@@ -21,6 +21,7 @@ bucketBuyer1 = ""
 bucketBuyer2 = ""
 bucketBiddingService = ""
 instanceRoleARN = ""
+region = "us-west-1"
 
 class VsockHandler:
     def __init__(self, cid, port, enclave):
@@ -146,7 +147,8 @@ class VsockListener:
         proc = subprocess.Popen(
             [
                 "/usr/src/app/kmstool_enclave_cli",
-                "--region", "us-west-2",
+                "decrypt",
+                "--region", region,
                 "--proxy-port", "8000",
                 "--aws-access-key-id", self.accessKey,
                 "--aws-secret-access-key", self.secretKey,
@@ -155,8 +157,11 @@ class VsockListener:
             ],
             stdout=subprocess.PIPE
         )
+
         plaintext = proc.communicate()[0].decode()
-        base64_bytes = plaintext.encode('ascii')
+        # plaintext's format is `PLAINTEXT: XXXXXXX`, extract the value
+        plaintext_content = plaintext.split(": ")[1]
+        base64_bytes = plaintext_content.encode('ascii')
         message_bytes = base64.b64decode(base64_bytes)
         message = message_bytes.decode('ascii')
         return message

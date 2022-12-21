@@ -137,13 +137,18 @@ We will be creating AWS Resources for each of the roles and then creating our en
 3. In this POC we will be making three bids on three different properties. Determine your bids for each property and then encrypt the bids using aws-cli. See [AWS documentation](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html "instructions") for more details about aws-cli. For the example I will be bidding $100,000 on the first property, $200,000 on the second property, and $150,000 on the third property.
 
 ```
-aws kms encrypt --key-id <KMS CMK KeyID> --plaintext 100000
+aws kms encrypt --key-id <KMS CMK KeyID> --cli-binary-format raw-in-base64-out --plaintext "100000"
 Returns: <Encrypted Bid 1>
-aws kms encrypt --key-id <KMS CMK KeyID> --plaintext 200000
+aws kms encrypt --key-id <KMS CMK KeyID> --cli-binary-format raw-in-base64-out --plaintext "200000"
 Returns: <Encrypted Bid 2>
-aws kms encrypt --key-id <KMS CMK KeyID> --plaintext 150000
+aws kms encrypt --key-id <KMS CMK KeyID> --cli-binary-format raw-in-base64-out --plaintext "150000"
 Returns: <Encrypted Bid 3>
 ```
+> If you need to verify the bid is encrypted correctly, you can use the following command to decrypt it: 
+    ```
+    aws kms decrypt --key-id <KMS CMK KeyID> --ciphertext-blob "<Encrypted Bid>" | jq -r .Plaintext | base64 --decode
+    ```
+
 4. Now create a file called encrypted.csv:
 ```
 [].contract,[].bid
@@ -151,6 +156,7 @@ Returns: <Encrypted Bid 3>
 2,<Encrypted Bid 2>
 3,<Encrypted Bid 3>
 ```
+> Alternatively, you can run `bash scripts/generate_bidder_1_bids.sh` for step 3 and 4.
 5. Place this file in the S3 bucket you created earlier. 
 
 #### Buyer2
@@ -216,6 +222,7 @@ At this point you should have the following ARNs from the previous steps:
     ]
 }
 ```
+# Do we also need to add the trust relationship for account and root?
 
 ### EC2 Instance Setup
 #### Bidding Service
@@ -252,6 +259,7 @@ sudo pip3 install boto3 pandas
 ```
 8. Start the vsock-proxy to allow KMS communication from the Enclave
 ```
+sudo systemctl start nitro-enclaves-vsock-proxy.service
 sudo systemctl enable nitro-enclaves-vsock-proxy.service
 ```
 
@@ -260,7 +268,7 @@ sudo systemctl enable nitro-enclaves-vsock-proxy.service
 1. Install git and clone this repository.
 ```
 sudo yum install -y git
-git clone https://github.com/Enclavet/nitro-enclave-bidding-service
+git clone https://github.com/aws-samples/aws-nitro-enclaves-bidding-service.git
 ```
 2. Build the kmstool-enclave-cli by following the instructions here: [https://github.com/aws/aws-nitro-enclaves-sdk-c/tree/main/bin/kmstool-enclave-cli](https://github.com/aws/aws-nitro-enclaves-sdk-c/tree/main/bin/kmstool-enclave-cli "instructions")
 3. After building the kmstool-enclave-cli, copy kmstool_enclave_cli and libnsm.so to your nitro-enclave-bidding-service directory.
@@ -273,6 +281,7 @@ bucketBiddingService = "<Bidding Service BUCKET NAME>"
 instanceRoleARN = "<INSTANCE ROLE ARN>"
 ...
 ```
+Also remember to modify the AWS region in the file if you are not using the default region
 5. Build the container
 ```
 docker build -t vsock-poc .
@@ -296,7 +305,7 @@ Enclave Image successfully created.
 
 ### KMS Key Policies Setup
 #### Buyer1 and Buyer2
-1. Follow these [instructions](https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-modifying.html 'instructions') to modify the KMS CMK key policy for each Buyer. You will want to add the following statement to the key policy. Note that the value of kms:RecipientAttestation:ImageSha384 is a series of zeroes as we will be running in debug mode for troubleshooting purposes:
+1. Follow these [instructions](https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-modifying.html 'instructions') to modify the KMS CMK key policy for each Buyer. You will want to add the following statement to the key policy, or replace the existing section with `"Sid": "Allow use of the key",` . Note that the value of kms:RecipientAttestation:ImageSha384 is a series of zeroes as we will be running in debug mode for troubleshooting purposes:
 ```
 {
     "Sid": "Allow use of the key",
