@@ -222,6 +222,22 @@ At this point you should have the following ARNs from the previous steps:
     ]
 }
 ```
+2. Follow these [instructions](https://docs.aws.amazon.com/IAM/latest/UserGuide/roles-managingrole-editing-console.html#roles-managingrole_edit-trust-policy) to add the following trust policy to the IAM EC2 instance role:
+``` 
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "ec2.amazonaws.com",
+                "AWS": "<INSTANCE ROLE ARN>"
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
+}
+```
 
 ### EC2 Instance Setup
 #### Bidding Service
