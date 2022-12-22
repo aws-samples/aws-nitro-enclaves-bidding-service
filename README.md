@@ -370,7 +370,7 @@ Note the EnclaveID and EnclaveCID.
 ```
 sudo nitro-cli console --enclave-id <EnclaveID>
 ```
-If you see similar output below, the application is ready to receive requests:
+This console will continuously print out the logs from inside the enclave. If you see similar output below, the application is ready to receive requests:
 ```
 ...
 [    0.807515] nsm: loading out-of-tree module taints kernel.
@@ -378,7 +378,7 @@ If you see similar output below, the application is ready to receive requests:
 [    0.812592] random: python3: uninitialized urandom read (24 bytes read)
 Starting VsockConnection
 ```
-3. Run the parent instance application
+3. Open another SSH session (or use a terminal multiplexer like [tmux](https://github.com/tmux/tmux/wiki) to create two separate terminals). Run the parent instance application
 ```
 python3 vsock-poc.py parent <EnclaveCID> 5005
 ```
